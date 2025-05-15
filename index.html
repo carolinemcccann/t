@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Send PDF with SMTP</title>
+</head>
+<body>
+  <h2>Upload PDF and Send via Any SMTP</h2>
+  <form id="sendForm">
+    <label>PDF File:</label><br>
+    <input type="file" name="pdf" required><br><br>
+
+    <label>Recipient Emails (one per line):</label><br>
+    <textarea name="emails" required></textarea><br><br>
+
+    <label>SMTP Server:</label><br>
+    <input type="text" name="smtp_server" value="smtp.example.com" required><br><br>
+
+    <label>SMTP Port:</label><br>
+    <input type="number" name="smtp_port" value="587" required><br><br>
+
+    <label>SMTP Username:</label><br>
+    <input type="text" name="smtp_username" required><br><br>
+
+    <label>SMTP Password:</label><br>
+    <input type="password" name="smtp_password" required><br><br>
+
+    <button type="submit">Send PDF</button>
+  </form>
+
+  <div id="status"></div>
+
+  <script>
+    document.getElementById('sendForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const formData = new FormData();
+      const file = document.querySelector('input[name=pdf]').files[0];
+      const emails = document.querySelector('textarea[name=emails]').value.split('\n').map(e => e.trim());
+
+      formData.append('pdf', file);
+      for (let email of emails) {
+        formData.append('emails', email);
+      }
+
+      formData.append('smtp_server', document.querySelector('input[name=smtp_server]').value);
+      formData.append('smtp_port', document.querySelector('input[name=smtp_port]').value);
+      formData.append('smtp_username', document.querySelector('input[name=smtp_username]').value);
+      formData.append('smtp_password', document.querySelector('input[name=smtp_password]').value);
+
+      const res = await fetch('/send-pdf', {
+        method: 'POST',
+        body: formData
+      });
+      const json = await res.json();
+      document.getElementById('status').innerText = json.status || json.error;
+    };
+  </script>
+</body>
+</html>
